@@ -1,0 +1,94 @@
+﻿@page "/strony"
+
+<PageTitle>Biblioteka moich stron</PageTitle>
+
+@using BlazorApp.Data
+@using System.Collections.Generic
+@using System.Web 
+
+<h1>Biblioteka moich stron</h1>
+
+<form action="/action_page.php">
+    <label for="fname">URL:</label>
+    <input type="text" @bind="@MyInput" id="fname" name="fname"><br><br>
+</form>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Dodaj stronę</button>
+
+<style>
+    .grid-container {
+        display: grid;
+        grid-template-columns: auto auto auto;
+        background-color: #2196F3;
+        padding: 10px;
+    }
+
+    .grid-item {
+        background-color: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(0, 0, 0, 0.8);
+        padding: 20px;
+        font-size: 30px;
+        text-align: center;
+    }
+</style>
+
+<h1 class="text-center">@pages.LastOrDefault()?.MyName()</h1>
+
+<div class="grid-container">
+
+    @foreach (var page in pages)
+    {
+
+    <div class="grid-item">
+        @((MarkupString)page.Html)
+    </div>
+
+    }
+</div>
+
+    @code {
+        public class Page
+        {
+            public string Url { protected get; set; }
+            public string Name { protected get; set; }
+            public string Html
+            {
+                get
+                {
+                    return "<a href='https://" + this.Url + "'>" + this.Name; //to ma zwracać link do strony w kontenerze
+                }
+                private set { }
+            }
+
+            public string MyName() => Name;
+        }
+        protected string MyInput { get; set; }
+
+        private List<Page> pages = new List<Page>();
+
+        private int currentCount = 0;
+
+        private string NameFromAddress(string addr)
+        {
+            var split = addr.Split(".");
+            return split[0].Contains("www") ? split[1] : split[0];
+        }
+
+        private void IncrementCount()
+        {
+            try
+            {
+                var page = new Page();
+                page.Url = MyInput;
+                page.Name = NameFromAddress(MyInput);
+                pages.Add(page);
+                Console.WriteLine(pages.Count());
+                Console.WriteLine(MyInput);
+            }
+            catch
+            {
+                Console.WriteLine("Invalid URL!");
+            }
+
+        }
+    }
